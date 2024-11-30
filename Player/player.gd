@@ -1,7 +1,6 @@
 extends CharacterBody2D
 
 @onready var dash_timer: Timer = $Dash_timer
-@onready var turn_await: Timer = $Turn_await
 
 @onready var animated_sprite_2d: AnimatedSprite2D = $AnimatedSprite2D
 @onready var jump_timer: Timer = $Jump_timer
@@ -31,9 +30,12 @@ var is_dashing = false
 var is_running = false
 var can_dash = true
 var is_idle = true
-var prev_dir = 0
-func _physics_process(delta: float) -> void:
 
+
+var reverse_to_right = false
+var reverse_to_left = true
+
+func _physics_process(delta: float) -> void:
 	
 	
 	if not is_on_floor():
@@ -101,33 +103,36 @@ func jump():
 		
 var flip_state = null
 func movement():
+	debug_test.text = str(velocity)
 
-	var direction := Input.get_axis("Left", "Right") 
-	debug_test.text = str(is_turning())
-	if is_turning():
-		animated_sprite_2d.play("turn_around")
-		
+	if velocity.x!=0:
+		animated_sprite_2d.speed_scale = abs(velocity.x) * 1/80
+	if Input.is_action_pressed("Right")and !is_dashing:
 
-	if direction and !is_dashing and !is_turning():
-		is_idle = false
-		if velocity.x!=0:
-			animated_sprite_2d.speed_scale = abs(velocity.x) * 1/80
-		if direction > 0:
-			animated_sprite_2d.flip_h = false
-			collision_shape_2d.position.x = 0
-			if velocity.y == 0 and !is_turning():
+		collision_shape_2d.position.x = 0
+		reverse_to_left = true
+		if is_on_floor():
+			if reverse_to_right == true:
+				
+				animated_sprite_2d.play('turn_around')
+			else:
 				animated_sprite_2d.play("run")
-	
-		elif direction < 0 :
-			animated_sprite_2d.flip_h = true
-			collision_shape_2d.position.x =10
-
-			if velocity.y == 0 :
-				animated_sprite_2d.play("run")
-
-		is_running = true
-		velocity.x = direction * speed_limit * speed_multipler
+			
+		velocity.x = speed_limit * speed_multipler
+		animated_sprite_2d.flip_h = false
+	elif Input.is_action_pressed("Left") and !is_dashing:
 		
+		collision_shape_2d.position.x =10
+		reverse_to_right = true
+		if is_on_floor():
+			if reverse_to_left == true:
+				
+				animated_sprite_2d.play('turn_around')
+			else:
+				animated_sprite_2d.play("run")
+			
+		velocity.x = -speed_limit * speed_multipler
+		animated_sprite_2d.flip_h = true
 	elif !is_dashing :
 		is_idle = true
 		is_running = false
@@ -142,18 +147,16 @@ func movement():
 
 
 
-func is_turning():
-	
-	var direction := Input.get_axis("Left", "Right") 
-	if( !animated_sprite_2d.flip_h and flip_state) or( animated_sprite_2d.flip_h and !flip_state) :
-		return true
-	else:
-		return false
+
 func _on_dash_timer_timeout() -> void:
 	can_dash = true
 	pass # Replace with function body.
 
 
 func _on_animated_sprite_2d_animation_finished() -> void:
-	print(animated_sprite_2d.animation)
+	if "turn_around" in animated_sprite_2d.animation:
+		if reverse_to_left:
+			reverse_to_left = false
+		if reverse_to_right:
+			reverse_to_right = false
 	pass # Replace with function body.

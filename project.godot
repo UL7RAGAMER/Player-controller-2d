@@ -19,6 +19,10 @@ config/icon="res://icon.svg"
 
 shapes/collision/draw_2d_outlines=false
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/AS2P/plugin.cfg")
+
 [input]
 
 Left={
