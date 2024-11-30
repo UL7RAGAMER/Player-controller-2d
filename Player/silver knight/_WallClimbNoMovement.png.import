@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cxr3sjb3e0oec"
-path="res://.godot/imported/Dungeon Tile Set.png-c948c7d22306c92641b166c555cb059a.ctex"
+uid="uid://dxy2wwsy3njh0"
+path="res://.godot/imported/_WallClimbNoMovement.png-58b11e97228b8ca939fe43c7f850dbad.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Player/Dungeon Tile Set.png"
-dest_files=["res://.godot/imported/Dungeon Tile Set.png-c948c7d22306c92641b166c555cb059a.ctex"]
+source_file="res://Player/silver knight/_WallClimbNoMovement.png"
+dest_files=["res://.godot/imported/_WallClimbNoMovement.png-58b11e97228b8ca939fe43c7f850dbad.ctex"]
 
 [params]
 

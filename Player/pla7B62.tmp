@@ -289,4 +289,10 @@ flip_h = true
 wait_time = 0.8
 one_shot = true
 
+[node name="Turn_await" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true
+
+[connection signal="animation_changed" from="AnimatedSprite2D" to="." method="_on_animated_sprite_2d_animation_changed"]
 [connection signal="timeout" from="Dash_timer" to="." method="_on_dash_timer_timeout"]
+[connection signal="timeout" from="Turn_await" to="." method="_on_turn_await_timeout"]
