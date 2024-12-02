@@ -1,10 +1,14 @@
 extends CharacterBody2D
-
+class_name Movement
 @onready var dash_timer: Timer = $Dash_timer
-
-@onready var animated_sprite_2d: AnimatedSprite2D = $AnimatedSprite2D
-@onready var jump_timer: Timer = $Jump_timer
+@onready var coyote_timer: Timer = $Coyote_timer
 @onready var debug_test: Label = $"Debug test"
+
+
+
+
+# Change this to work with any AnimatedSprite2D
+@onready var animated_sprite_2d: AnimatedSprite2D = $AnimatedSprite2D
 @onready var collision_shape_2d: CollisionShape2D = $CollisionShape2D
 
 
@@ -24,17 +28,22 @@ extends CharacterBody2D
 @export_category("Movement abilities")
 @export var dash_enabled = false
 
-
 var has_jumped = false
 var is_dashing = false
 var is_running = false
 var can_dash = true
 var is_idle = true
-
-
+var can_jump = true
+var was_on_floor = true
+var collision_shape_offset = 10
 var reverse_to_right = false
 var reverse_to_left = true
+func _ready() -> void:
+	pass
 
+
+
+	
 func _physics_process(delta: float) -> void:
 	
 	
@@ -43,15 +52,17 @@ func _physics_process(delta: float) -> void:
 	else:
 		collision_shape_2d.scale = Vector2(1,1)
 		gravity_multipler = 1
-		has_jumped = false
 		speed_multipler = 1
-		
+		has_jumped = false
+		can_jump = true
+
 
 	movement()
 	jump()
 	if dash_enabled:
 		dash()
-
+	
+	was_on_floor = is_on_floor()
 	move_and_slide()
 func dash():
 
@@ -68,6 +79,7 @@ func dash():
 		is_running = false
 		is_dashing = true
 		can_dash = false
+		
 		print('Dash')
 		gravity_multipler = 0
 		velocity.x += dash_velocity * direction
@@ -82,13 +94,24 @@ func dash():
 
 
 
-
 func jump():
+	
+	debug_test.text = str(is_on_wall(), ' ', coyote_timer.time_left)
+	
+	if !has_jumped and was_on_floor:
+		coyote_timer.start()
+		
 	velocity.y = clamp(velocity.y,jump_velocity,fall_speed_limit)
-	
-	
-	if Input.is_action_just_pressed("Jump") and is_on_floor():
+	if Input.is_action_pressed("Right")and !is_dashing and !is_on_floor():
+		reverse_to_left = true
+		reverse_to_right = false
+
+	if Input.is_action_pressed("Left")and !is_dashing and !is_on_floor():
+		reverse_to_left = false
+		reverse_to_right = true
+	if Input.is_action_just_pressed("Jump") and can_jump:
 		is_idle = false
+		can_jump = false
 		speed_multipler = 1
 		collision_shape_2d.scale = Vector2(1,0.8)
 		animated_sprite_2d.play('jump')
@@ -101,13 +124,14 @@ func jump():
 		animated_sprite_2d.play('fall')
 		gravity_multipler=1.3
 		
-var flip_state = null
 func movement():
-	debug_test.text = str(velocity)
-
+	if is_on_floor():
+		floor_stop_on_slope = true
+	else:
+		floor_stop_on_slope = false
 	if velocity.x!=0:
 		animated_sprite_2d.speed_scale = abs(velocity.x) * 1/80
-	if Input.is_action_pressed("Right")and !is_dashing:
+	if Input.is_action_pressed("Right")and !is_dashing :
 
 		collision_shape_2d.position.x = 0
 		reverse_to_left = true
@@ -122,10 +146,10 @@ func movement():
 		animated_sprite_2d.flip_h = false
 	elif Input.is_action_pressed("Left") and !is_dashing:
 		
-		collision_shape_2d.position.x =10
+		collision_shape_2d.position.x = collision_shape_offset
 		reverse_to_right = true
 		if is_on_floor():
-			if reverse_to_left == true:
+			if reverse_to_left == true and !has_jumped:
 				
 				animated_sprite_2d.play('turn_around')
 			else:
@@ -141,8 +165,6 @@ func movement():
 			animated_sprite_2d.speed_scale = 1
 			animated_sprite_2d.play('idle')
 
-	if Engine.get_frames_drawn()%10 == 0:
-		flip_state = animated_sprite_2d.flip_h
 
 
 
@@ -159,4 +181,9 @@ func _on_animated_sprite_2d_animation_finished() -> void:
 			reverse_to_left = false
 		if reverse_to_right:
 			reverse_to_right = false
+	pass # Replace with function body.
+
+
+func _on_coyote_timer_timeout() -> void:
+	can_jump = false
 	pass # Replace with function body.

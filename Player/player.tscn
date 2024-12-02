@@ -8,8 +8,8 @@
 [ext_resource type="Texture2D" uid="uid://js53d0uj86im" path="res://Player/silver knight/_Run.png" id="6_msicu"]
 [ext_resource type="Texture2D" uid="uid://co7qf5woc3yy0" path="res://Player/silver knight/_TurnAround.png" id="7_em6k7"]
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_j2cs1"]
-height = 37.86
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gqk6m"]
+size = Vector2(20, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_mmhrb"]
 atlas = ExtResource("2_ulb0s")
@@ -256,12 +256,14 @@ animations = [{
 
 [node name="Player" type="CharacterBody2D"]
 collision_mask = 2
+floor_stop_on_slope = false
+safe_margin = 1.0
 script = ExtResource("1_eyqwy")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 physics_interpolation_mode = 1
-position = Vector2(10, 3)
-shape = SubResource("CapsuleShape2D_j2cs1")
+position = Vector2(10, 6)
+shape = SubResource("RectangleShape2D_gqk6m")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 physics_interpolation_mode = 1
@@ -278,13 +280,19 @@ drag_vertical_enabled = true
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 position = Vector2(1, -14)
 sprite_frames = SubResource("SpriteFrames_bf8ys")
-animation = &"turn_around"
+animation = &"idle"
 autoplay = "idle"
 offset = Vector2(3.985, -2.85)
+flip_h = true
 
 [node name="Dash_timer" type="Timer" parent="."]
 wait_time = 0.8
 one_shot = true
 
+[node name="Coyote_timer" type="Timer" parent="."]
+wait_time = 0.05
+one_shot = true
+
 [connection signal="animation_finished" from="AnimatedSprite2D" to="." method="_on_animated_sprite_2d_animation_finished"]
 [connection signal="timeout" from="Dash_timer" to="." method="_on_dash_timer_timeout"]
+[connection signal="timeout" from="Coyote_timer" to="." method="_on_coyote_timer_timeout"]
