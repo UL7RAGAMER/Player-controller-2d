@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3 uid="uid://c4j37j3tk2xoh"]
+[gd_scene load_steps=44 format=3 uid="uid://c4j37j3tk2xoh"]
 
 [ext_resource type="Script" path="res://Player/player.gd" id="1_eyqwy"]
 [ext_resource type="Texture2D" uid="uid://cclbvtjd4ph7l" path="res://Player/silver knight/_Idle.png" id="2_sisxu"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://cgipttg0elw7r" path="res://Player/silver knight/_Jump.png" id="4_cxhqv"]
 [ext_resource type="Texture2D" uid="uid://js53d0uj86im" path="res://Player/silver knight/_Run.png" id="6_msicu"]
 [ext_resource type="Texture2D" uid="uid://co7qf5woc3yy0" path="res://Player/silver knight/_TurnAround.png" id="7_em6k7"]
+[ext_resource type="Texture2D" uid="uid://1sxj338dresd" path="res://Player/silver knight/_WallSlide.png" id="8_c3prv"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gqk6m"]
 size = Vector2(20, 32)
@@ -131,6 +132,18 @@ region = Rect2(120, 0, 120, 80)
 atlas = ExtResource("7_em6k7")
 region = Rect2(240, 0, 120, 80)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_fdk6v"]
+atlas = ExtResource("8_c3prv")
+region = Rect2(0, 0, 120, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fatnj"]
+atlas = ExtResource("8_c3prv")
+region = Rect2(240, 0, 120, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uy6dy"]
+atlas = ExtResource("8_c3prv")
+region = Rect2(120, 0, 120, 80)
+
 [sub_resource type="SpriteFrames" id="SpriteFrames_bf8ys"]
 animations = [{
 "frames": [{
@@ -251,7 +264,21 @@ animations = [{
 }],
 "loop": false,
 "name": &"turn_around",
-"speed": 15.0
+"speed": 19.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fdk6v")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fatnj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uy6dy")
+}],
+"loop": true,
+"name": &"wall_slide",
+"speed": 5.0
 }]
 
 [node name="Player" type="CharacterBody2D"]
@@ -280,7 +307,7 @@ drag_vertical_enabled = true
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 position = Vector2(1, -14)
 sprite_frames = SubResource("SpriteFrames_bf8ys")
-animation = &"idle"
+animation = &"wall_slide"
 autoplay = "idle"
 offset = Vector2(3.985, -2.85)
 flip_h = true

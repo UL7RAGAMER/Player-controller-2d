@@ -27,12 +27,14 @@ class_name Movement
 @export var dash_velocity = 300
 @export_category("Movement abilities")
 @export var dash_enabled = false
-
+@export var wall_slide_enabled = false
 var has_jumped = false
 var is_dashing = false
 var is_running = false
-var can_dash = true
+var is_sliding = false
 var is_idle = true
+var can_run = true
+var can_dash = true
 var can_jump = true
 var was_on_floor = true
 var collision_shape_offset = 10
@@ -45,23 +47,24 @@ func _ready() -> void:
 
 	
 func _physics_process(delta: float) -> void:
-	
+	debug_test.text = str(round(velocity))
 	
 	if not is_on_floor():
 		velocity += get_gravity() * delta * gravity_multipler
 	else:
-		collision_shape_2d.scale = Vector2(1,1)
 		gravity_multipler = 1
 		speed_multipler = 1
 		has_jumped = false
 		can_jump = true
-
+		can_run  = true
+		is_sliding = false
 
 	movement()
 	jump()
 	if dash_enabled:
 		dash()
-	
+	if wall_slide_enabled:
+		wall_slide()
 	was_on_floor = is_on_floor()
 	move_and_slide()
 func dash():
@@ -79,6 +82,7 @@ func dash():
 		is_running = false
 		is_dashing = true
 		can_dash = false
+		is_sliding = false
 		
 		print('Dash')
 		gravity_multipler = 0
@@ -91,12 +95,48 @@ func dash():
 		gravity_multipler = 1
 		is_dashing = false
 
+func wall_slide():
+	var direction = 0
+	if is_on_wall_only():
+		
+		if Input.is_action_pressed("Right"):
+			
+			direction = -1
+			velocity.x = -direction
+			can_run = false
+			is_sliding = true
+			animated_sprite_2d.flip_h = true
+			animated_sprite_2d.play('wall_slide')
+			collision_shape_2d.position.x = collision_shape_offset/1.7
 
+			
+		elif Input.is_action_pressed("Left"):
+			direction = 1
+			velocity.x = -direction
+			can_run = false
+			is_sliding = true
+			animated_sprite_2d.flip_h = false
+			animated_sprite_2d.play('wall_slide')
+			collision_shape_2d.position.x = collision_shape_offset/2.8
 
-
+				
+		if velocity.y > 0:
+			gravity_multipler = 0.3
+		if Input.is_action_just_pressed("Jump") and is_sliding and velocity.y> 0:
+			
+			velocity.x = -jump_velocity * direction*9
+			gravity_multipler = 1
+			velocity.y = jump_velocity/1.2
+			can_run = true
+	elif is_sliding:
+		gravity_multipler = 1
+		can_run = true
+		if velocity.y >0 or velocity.x !=0:
+			animated_sprite_2d.play('fall')
+	
 func jump():
 	
-	debug_test.text = str(is_on_wall(), ' ', coyote_timer.time_left)
+
 	
 	if !has_jumped and was_on_floor:
 		coyote_timer.start()
@@ -113,14 +153,13 @@ func jump():
 		is_idle = false
 		can_jump = false
 		speed_multipler = 1
-		collision_shape_2d.scale = Vector2(1,0.8)
 		animated_sprite_2d.play('jump')
 		velocity.y = jump_velocity
 		
 		has_jumped = true
 	if Input.is_action_just_released("Jump") and not( has_jumped and velocity.y > 0):
 		velocity.y/=5
-	if velocity.y > 0 and !is_dashing:
+	if velocity.y > 0 and !is_dashing and !is_sliding:
 		animated_sprite_2d.play('fall')
 		gravity_multipler=1.3
 		
@@ -131,7 +170,7 @@ func movement():
 		floor_stop_on_slope = false
 	if velocity.x!=0:
 		animated_sprite_2d.speed_scale = abs(velocity.x) * 1/80
-	if Input.is_action_pressed("Right")and !is_dashing :
+	if Input.is_action_pressed("Right")and !is_dashing and can_run :
 
 		collision_shape_2d.position.x = 0
 		reverse_to_left = true
@@ -144,7 +183,7 @@ func movement():
 			
 		velocity.x = speed_limit * speed_multipler
 		animated_sprite_2d.flip_h = false
-	elif Input.is_action_pressed("Left") and !is_dashing:
+	elif Input.is_action_pressed("Left") and !is_dashing and can_run:
 		
 		collision_shape_2d.position.x = collision_shape_offset
 		reverse_to_right = true
