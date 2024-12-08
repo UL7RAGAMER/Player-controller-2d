@@ -4,6 +4,7 @@ class_name Movement
 @onready var coyote_timer: Timer = $Coyote_timer
 @onready var debug_test: Label = $"Debug test"
 @onready var wall_slide_timer: Timer = $Wall_slide_timer
+@onready var ceiling_collider: RayCast2D = $Ceiling_collider
 
 
 
@@ -29,6 +30,9 @@ class_name Movement
 @export_category("Movement abilities")
 @export var dash_enabled = false
 @export var wall_slide_enabled = false
+
+@export_category("Debugger tools")
+@export_range(0.1,5,0.1,'or_greater') var time_scale : float = 1
 var has_jumped = false
 var is_dashing = false
 var is_running = false
@@ -54,7 +58,7 @@ func _ready() -> void:
 
 	
 func _physics_process(delta: float) -> void:
-	
+	Engine.time_scale = time_scale
 	
 	if not is_on_floor():
 		velocity += get_gravity() * delta * gravity_multipler
@@ -66,6 +70,7 @@ func _physics_process(delta: float) -> void:
 		can_run  = true
 		is_sliding = false
 		fall_speed_limit = 500
+		ceiling_collider.enabled = false
 	movement()
 	jump()
 	if dash_enabled:
@@ -92,6 +97,7 @@ func dash():
 		is_sliding = false
 		
 		print('Dash')
+		
 		gravity_multipler = 0
 		velocity.x += dash_velocity * direction
 			
@@ -104,8 +110,10 @@ func dash():
 
 func wall_slide():
 	
-	
+	if is_on_ceiling():
+		return
 	if is_on_wall_only() and can_slide:
+		ceiling_collider.enabled = true
 		can_dash = false
 
 		var right_pressed = Input.is_action_pressed("Right")
@@ -130,7 +138,6 @@ func wall_slide():
 				direction_wall = -1
 				animated_sprite_2d.flip_h = true
 				collision_shape_2d.position.x = collision_shape_offset/1.8
-				
 			can_run = false
 			is_sliding = true
 			animated_sprite_2d.play('wall_slide')
@@ -138,8 +145,8 @@ func wall_slide():
 			fall_speed_limit = 200
 		if velocity.y > 0:
 			gravity_multipler = 0.3
-		if Input.is_action_just_pressed("Jump") and is_sliding and velocity.y> 0:
-
+		if Input.is_action_just_pressed("Jump") and is_sliding and velocity.y> 0 and !(ceiling_collider.get_collider() is TileMapLayer):
+			can_jump = false
 			can_slide = false
 			wall_slide_timer.start()
 			velocity.x = -jump_velocity * direction_wall*9
@@ -151,6 +158,7 @@ func wall_slide():
 		gravity_multipler = 1
 		can_run = true
 		is_sliding = false
+		can_dash = true
 		if velocity.y >0 or velocity.x !=0:
 			fall_speed_limit = 500
 			animated_sprite_2d.play('fall')
@@ -229,8 +237,6 @@ func movement():
 
 
 
-func _input(event: InputEvent) -> void:
-	print(event)
 
 func _on_dash_timer_timeout() -> void:
 	can_dash = true
