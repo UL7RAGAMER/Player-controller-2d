@@ -5,6 +5,7 @@ class_name Movement
 @onready var debug_test: Label = $"Debug test"
 @onready var wall_slide_timer: Timer = $Wall_slide_timer
 @onready var ceiling_collider: RayCast2D = $Ceiling_collider
+@onready var animation_player: AnimationPlayer = $Weapon/AnimationPlayer
 
 
 
@@ -38,28 +39,36 @@ var is_dashing = false
 var is_running = false
 var is_sliding = false
 var is_idle = true
+var is_sliding_left = false
+var is_sliding_right = false
 var can_run = true
 var can_dash = true
 var can_jump = true
 var can_slide = true
+var can_idle = true
 var was_on_floor = true
 var collision_shape_offset = 10
 var reverse_to_right = false
 var reverse_to_left = true
-var is_sliding_left = false
-var is_sliding_right = false
+
 
 
 var direction_wall = 0
 func _ready() -> void:
+	print_tree()
 	pass
 
 
 
 	
 func _physics_process(delta: float) -> void:
+	debug_test.text = str(can_idle)
 	Engine.time_scale = time_scale
-	
+	if animated_sprite_2d.flip_h:
+		weapon.scale =  Vector2(1,-1)
+		
+	else :
+		weapon.scale =  Vector2(-1,-1)
 	if not is_on_floor():
 		velocity += get_gravity() * delta * gravity_multipler
 	else:
@@ -118,7 +127,7 @@ func wall_slide():
 
 		var right_pressed = Input.is_action_pressed("Right")
 		var left_pressed = Input.is_action_pressed('Left')
-		debug_test.text = str(!(right_pressed and left_pressed))
+		
 		if (right_pressed or left_pressed ):
 			
 			if (right_pressed and left_pressed): # This weird condition is to prevent a bug when sliding on the wall and pressing both left and right
@@ -201,32 +210,36 @@ func movement():
 	if velocity.x!=0:
 		animated_sprite_2d.speed_scale = abs(velocity.x) * 1/80
 	
-	if Input.is_action_pressed("Right")and !is_dashing and can_run :
+	if Input.is_action_pressed("Right")and !is_dashing and can_run and !is_attacking :
+		can_idle = true
+		is_running = true
 		collision_shape_2d.position.x = 0
 		reverse_to_left = true
 		if is_on_floor():
 			if reverse_to_right == true:
 				
 				animated_sprite_2d.play('turn_around')
-			else:
+			elif !is_attacking:
 				animated_sprite_2d.play("run")
 			
 		velocity.x = speed_limit * speed_multipler
 		animated_sprite_2d.flip_h = false
-	elif Input.is_action_pressed("Left") and !is_dashing and can_run :
+	elif Input.is_action_pressed("Left") and !is_dashing and can_run and !is_attacking :
+		can_idle = true
 
+		is_running = true
 		collision_shape_2d.position.x = collision_shape_offset
 		reverse_to_right = true
 		if is_on_floor():
 			if reverse_to_left == true and !has_jumped:
 				
 				animated_sprite_2d.play('turn_around')
-			else:
+			elif !is_attacking:
 				animated_sprite_2d.play("run")
 			
 		velocity.x = -speed_limit * speed_multipler
 		animated_sprite_2d.flip_h = true
-	elif !is_dashing :
+	elif !is_dashing and can_idle :
 		is_idle = true
 		is_running = false
 		velocity.x = move_toward(velocity.x, 0, 5)
@@ -234,9 +247,21 @@ func movement():
 			animated_sprite_2d.speed_scale = 1
 			animated_sprite_2d.play('idle')
 
+var is_attacking = false
+var can_atk = true
+@onready var weapon: Node2D = $Weapon
 
+func attack():
 
-
+	if !is_running and can_atk:
+		velocity.x = 0
+		can_atk = false
+		is_attacking = true
+		is_running = false
+		can_idle = false
+		can_dash = false
+		animated_sprite_2d.play('attack')
+		animation_player.play('Attack')
 
 func _on_dash_timer_timeout() -> void:
 	can_dash = true
@@ -249,8 +274,14 @@ func _on_animated_sprite_2d_animation_finished() -> void:
 			reverse_to_left = false
 		if reverse_to_right:
 			reverse_to_right = false
+	if 'attack' in animated_sprite_2d.animation:
+		can_idle = true
+		can_run = true
+		can_dash = true
+		is_attacking = false
+		await get_tree().create_timer(0.2).timeout
+		can_atk = true
 	pass # Replace with function body.
-
 
 func _on_coyote_timer_timeout() -> void:
 	can_jump = false
