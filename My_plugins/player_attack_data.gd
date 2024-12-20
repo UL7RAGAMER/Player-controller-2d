@@ -21,6 +21,7 @@ var current_damage:int
 	set(v):next()
 @export var btn_end : bool:
 	set(v):end()
+	
 func _ready() -> void:
 	current_frame = 0
 	get_parent().set_editable_instance(self, true)
@@ -76,6 +77,14 @@ func add_frame():
 	current_index+=1
 	frame_count+=1
 func delete_all_frames():
+	var t = AcceptDialog.new()
+	var b = t.get_ok_button()
+	t.title = name
+	t.dialog_text = 'Are u sure u want to delete all frames'
+	EditorInterface.popup_dialog_centered(t)
+	await b.pressed
+	t.popup_window = true
+
 	for i in get_children(true):
 		i.queue_free()
 	current_index = 0
@@ -112,7 +121,6 @@ func next():
 		children[i].visible = true
 		children[i].disabled = false
 		current_damage = children[i].damage
-		print(current_damage)
 	current_frame+=1
 	
 

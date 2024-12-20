@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://corwrglfui0e3"]
+
+[ext_resource type="PackedScene" uid="uid://fl5oxxvop4qy" path="res://Player/health_component.tscn" id="1_rc1s2"]
+[ext_resource type="PackedScene" uid="uid://cy87l8seclbj3" path="res://Player/hitbox_component.tscn" id="2_4ufy8"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gqk6m"]
+size = Vector2(20, 32)
+
+[node name="Components" type="Node2D"]
+
+[node name="Health_component" parent="." node_paths=PackedStringArray("hitbox") instance=ExtResource("1_rc1s2")]
+hitbox = NodePath("../Hitbox_component")
+
+[node name="Hitbox_component" parent="." node_paths=PackedStringArray("health_component") instance=ExtResource("2_4ufy8")]
+collision_mask = 4
+health_component = NodePath("../Health_component")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox_component"]
+physics_interpolation_mode = 1
+position = Vector2(10, 6)
+shape = SubResource("RectangleShape2D_gqk6m")

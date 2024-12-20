@@ -12,7 +12,7 @@ extends EditorInspectorPlugin
 var colors := {
 	"danger": Color.html("#da1d0b"),
 	"warning": Color.html("#e5a11a"),
-	"success": Color.html("#22c358"),
+	"success": Color.html("#22c39b"),
 	"info": Color.html("#1a5ee5"),
 }
 
@@ -59,7 +59,7 @@ func _parse_property(object: Object, type: Variant.Type, name: String, hint_type
 				var buttons_size := button_list.size()
 
 				var container := HBoxContainer.new()
-				container.alignment = BoxContainer.ALIGNMENT_CENTER;
+				container.alignment = BoxContainer.ALIGNMENT_BEGIN;
 				known_buttons[name] = container
 
 				for button_index in range(buttons_size):
@@ -70,7 +70,7 @@ func _parse_property(object: Object, type: Variant.Type, name: String, hint_type
 						button.text += " " + str(button_index + 1)
 					update_button(button, button_item, container)
 					container.add_child(button)
-
+				
 				add_custom_control(container)
 				return true
 
@@ -103,7 +103,7 @@ func set_color(button: Button, color: Color) -> void:
 
 func update_button(button: Button, props: Dictionary, container: HBoxContainer) -> void:
 	if props.has("text"):
-		button.text = props.get("text")
+		button.text = 'asd'
 
 	if props.has("click"):
 		var callable := Callable(props.get("click"))
@@ -130,7 +130,7 @@ func update_button(button: Button, props: Dictionary, container: HBoxContainer) 
 			color = color_value
 		elif typeof(color_value) == TYPE_STRING:
 			if color_value.begins_with('#'):
-				color = Color.html(color_value)
+				color = Color.html("#22c39b")
 			elif colors.has(color_value):
 				color = colors.get(color_value)
 		if color:
@@ -138,7 +138,8 @@ func update_button(button: Button, props: Dictionary, container: HBoxContainer) 
 
 	if props.has("fill"):
 		if props.get("fill"):
-			button.size_flags_horizontal = Control.SIZE_EXPAND | Control.SIZE_FILL
+			button.size_flags_stretch_ratio = 0.1 
+			button.size_flags_horizontal = Control.SIZE_EXPAND
 		else:
 			button.size_flags_horizontal = 0
 
@@ -148,7 +149,7 @@ func update_button(button: Button, props: Dictionary, container: HBoxContainer) 
 			"begin": container.alignment = BoxContainer.ALIGNMENT_BEGIN;
 			"center": container.alignment = BoxContainer.ALIGNMENT_CENTER;
 			"end": container.alignment = BoxContainer.ALIGNMENT_END;
-
+	container.add_theme_constant_override('separation',10)
 func refresh():
 	# Is there no official way to refresh inspector?
 	for property_name in known_buttons:

@@ -4,16 +4,16 @@ class_name Movement
 @onready var coyote_timer: Timer = $Coyote_timer
 @onready var debug_test: Label = $"Debug test"
 @onready var wall_slide_timer: Timer = $Wall_slide_timer
-@onready var ceiling_collider: RayCast2D = $Ceiling_collider
-@onready var animation_player: AnimationPlayer = $Weapon/AnimationPlayer
+
 
 
 
 
 # Change this to work with any AnimatedSprite2D
-@onready var animated_sprite_2d: AnimatedSprite2D = $AnimatedSprite2D
-@onready var collision_shape_2d: CollisionShape2D = $CollisionShape2D
-
+@export var animated_sprite_2d: AnimatedSprite2D
+@export var collision_shape_2d: CollisionShape2D
+@export var ceiling_collider: RayCast2D
+@export var animation_player: AnimationPlayer
 
 
 @export_category("Movement settings")
@@ -31,6 +31,7 @@ class_name Movement
 @export_category("Movement abilities")
 @export var dash_enabled = false
 @export var wall_slide_enabled = false
+@export var max_jumps = 1
 
 @export_category("Debugger tools")
 @export_range(0.1,5,0.1,'or_greater') var time_scale : float = 1
@@ -50,11 +51,13 @@ var was_on_floor = true
 var collision_shape_offset = 10
 var reverse_to_right = false
 var reverse_to_left = true
-
-
+var jumps_left : int
 
 var direction_wall = 0
 func _ready() -> void:
+	jumps_left = max_jumps
+	#atk1.end() # Do the same for any futere attacks
+	#atk2.end()
 	print_tree()
 	pass
 
@@ -62,7 +65,7 @@ func _ready() -> void:
 
 	
 func _physics_process(delta: float) -> void:
-	debug_test.text = str(can_idle)
+	debug_test.text = str(jumps_left)
 	Engine.time_scale = time_scale
 	if animated_sprite_2d.flip_h:
 		weapon.scale =  Vector2(1,-1)
@@ -80,6 +83,7 @@ func _physics_process(delta: float) -> void:
 		is_sliding = false
 		fall_speed_limit = 500
 		ceiling_collider.enabled = false
+		jumps_left = max_jumps
 	movement()
 	jump()
 	if dash_enabled:
@@ -124,7 +128,7 @@ func wall_slide():
 	if is_on_wall_only() and can_slide:
 		ceiling_collider.enabled = true
 		can_dash = false
-
+		
 		var right_pressed = Input.is_action_pressed("Right")
 		var left_pressed = Input.is_action_pressed('Left')
 		
@@ -138,7 +142,7 @@ func wall_slide():
 					animated_sprite_2d.flip_h = true
 					collision_shape_2d.position.x = collision_shape_offset/1.8
 				pass
-			
+				
 			elif left_pressed :
 				direction_wall = 1
 				animated_sprite_2d.flip_h = false
@@ -147,14 +151,17 @@ func wall_slide():
 				direction_wall = -1
 				animated_sprite_2d.flip_h = true
 				collision_shape_2d.position.x = collision_shape_offset/1.8
+			can_jump = false
 			can_run = false
 			is_sliding = true
+			can_dash = false
 			animated_sprite_2d.play('wall_slide')
 			velocity.x = -direction_wall
 			fall_speed_limit = 200
 		if velocity.y > 0:
 			gravity_multipler = 0.3
 		if Input.is_action_just_pressed("Jump") and is_sliding and velocity.y> 0 and !(ceiling_collider.get_collider() is TileMapLayer):
+			print('asd5 ')
 			can_jump = false
 			can_slide = false
 			wall_slide_timer.start()
@@ -162,6 +169,7 @@ func wall_slide():
 			gravity_multipler = 1
 			velocity.y = jump_velocity/1.2
 			can_run = true
+			can_dash = true
 		
 	elif is_sliding:
 		gravity_multipler = 1
@@ -171,7 +179,7 @@ func wall_slide():
 		if velocity.y >0 or velocity.x !=0:
 			fall_speed_limit = 500
 			animated_sprite_2d.play('fall')
-			can_jump = false
+		can_jump = false
 	
 func jump():
 	
@@ -189,18 +197,25 @@ func jump():
 		reverse_to_right = true
 	if Input.is_action_just_pressed("Jump") and can_jump:
 		is_idle = false
-		can_jump = false
+		if jumps_left != 0:
+			jumps_left -= 1
+			print('asd2')
+		else :
+			print('asd1')
+			can_jump = false
 		speed_multipler = 1
 		animated_sprite_2d.play('jump')
 		velocity.y = jump_velocity
 		
 		has_jumped = true
-	if Input.is_action_just_released("Jump") and not(has_jumped and velocity.y > 0) and has_jumped: #The extra has_jumped is for fixing a jump glitch whill falling without jumping
+	if Input.is_action_just_released("Jump") and not(has_jumped and velocity.y > 0) and has_jumped : #The extra has_jumped is for fixing a jump glitch whill falling without jumping
 		velocity.y/=5
 	if velocity.y > 0 and !is_dashing and !is_sliding:
 		animated_sprite_2d.play('fall')
 		gravity_multipler=1.3
-		can_jump = false
+		if jumps_left == 0:
+			print('asd')
+			can_jump = false
 		
 func movement():
 	if is_on_floor(): # This is for preventing a weird jitter when running and jumping
@@ -226,7 +241,7 @@ func movement():
 		animated_sprite_2d.flip_h = false
 	elif Input.is_action_pressed("Left") and !is_dashing and can_run and !is_attacking :
 		can_idle = true
-
+	
 		is_running = true
 		collision_shape_2d.position.x = collision_shape_offset
 		reverse_to_right = true
@@ -250,7 +265,10 @@ func movement():
 var is_attacking = false
 var can_atk = true
 @onready var weapon: Node2D = $Weapon
+@onready var atk1: player_attack_data = $Weapon/Attack1
+@onready var atk2: player_attack_data = $Weapon/Attack2
 
+var atk = true
 func attack():
 
 	if !is_running and can_atk:
@@ -260,8 +278,14 @@ func attack():
 		is_running = false
 		can_idle = false
 		can_dash = false
-		animated_sprite_2d.play('attack')
-		animation_player.play('Attack')
+		if atk:
+			animation_player.play('Attack')
+			atk1.visible = true
+			atk2.visible = false
+		elif !atk:
+			animation_player.play('Attack2')
+			atk1.visible = false
+			atk2.visible = true
 
 func _on_dash_timer_timeout() -> void:
 	can_dash = true
@@ -275,16 +299,18 @@ func _on_animated_sprite_2d_animation_finished() -> void:
 		if reverse_to_right:
 			reverse_to_right = false
 	if 'attack' in animated_sprite_2d.animation:
+		atk= !atk
 		can_idle = true
 		can_run = true
 		can_dash = true
 		is_attacking = false
-		await get_tree().create_timer(0.2).timeout
+		await get_tree().create_timer(0.01).timeout
 		can_atk = true
 	pass # Replace with function body.
 
 func _on_coyote_timer_timeout() -> void:
-	can_jump = false
+	if jumps_left == 0:
+		can_jump = false
 	pass # Replace with function body.
 
 

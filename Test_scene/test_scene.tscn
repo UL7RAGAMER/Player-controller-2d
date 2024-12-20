@@ -1,11 +1,8 @@
-[gd_scene load_steps=10 format=4 uid="uid://ca2x0cginegni"]
+[gd_scene load_steps=6 format=4 uid="uid://ca2x0cginegni"]
 
 [ext_resource type="Script" path="res://Test_scene/test_scene.gd" id="1_fm6he"]
 [ext_resource type="PackedScene" uid="uid://c4j37j3tk2xoh" path="res://Player/player.tscn" id="1_hg0gm"]
 [ext_resource type="Texture2D" uid="uid://cxr3sjb3e0oec" path="res://Test_scene/Dungeon Tile Set.png" id="2_l7r0h"]
-[ext_resource type="PackedScene" uid="uid://cnquaiwuif3rj" path="res://Player/test_enemy.tscn" id="3_ycyx0"]
-[ext_resource type="Script" path="res://Test_scene/weapon.gd" id="5_adp2g"]
-[ext_resource type="Script" path="res://My_plugins/Frame_node.gd" id="6_fjolw"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_hwg48"]
 texture = ExtResource("2_l7r0h")
@@ -337,13 +334,11 @@ terrain_set_0/terrain_2/name = "Air"
 terrain_set_0/terrain_2/color = Color(0.46875, 0.5, 0.25, 1)
 sources/0 = SubResource("TileSetAtlasSource_hwg48")
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_yl4y3"]
-
 [node name="Test_scene" type="Node2D"]
 script = ExtResource("1_fm6he")
 
 [node name="CharacterBody2D" parent="." instance=ExtResource("1_hg0gm")]
-position = Vector2(675, 506)
+position = Vector2(818, -100)
 speed_limit = 160
 fall_speed_limit = 500
 jump_velocity = -400
@@ -382,19 +377,3 @@ grow_vertical = 2
 scale = Vector2(0.321234, 0.321234)
 theme_override_font_sizes/font_size = 136
 text = "adas"
-
-[node name="Node2D" parent="." instance=ExtResource("3_ycyx0")]
-position = Vector2(470, 524)
-
-[node name="Area2D" type="Area2D" parent="."]
-collision_layer = 0
-collision_mask = 0
-script = ExtResource("5_adp2g")
-
-[node name="Frame_node" type="CollisionShape2D" parent="Area2D"]
-shape = SubResource("CircleShape2D_yl4y3")
-script = ExtResource("6_fjolw")
-damage = 4
-
-[connection signal="area_entered" from="Area2D" to="Area2D" method="_on_area_entered"]
-[connection signal="area_shape_entered" from="Area2D" to="." method="_on_area_2d_area_shape_entered"]

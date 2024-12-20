@@ -1,74 +1,7 @@
-[gd_scene load_steps=14 format=3 uid="uid://bh35dnlsgggch"]
+[gd_scene load_steps=2 format=3 uid="uid://bh35dnlsgggch"]
 
 [ext_resource type="Script" path="res://My_plugins/player_attack_data.gd" id="1_w2i7p"]
-[ext_resource type="Script" path="res://My_plugins/Frame_node.gd" id="2_5y2gl"]
-[ext_resource type="Script" path="res://My_plugins/Frame_obj.gd" id="2_t84ow"]
-
-[sub_resource type="Resource" id="Resource_0hcii"]
-script = ExtResource("2_t84ow")
-frame = Array[int]([0])
-
-[sub_resource type="Resource" id="Resource_f8edl"]
-script = ExtResource("2_t84ow")
-frame = Array[int]([1])
-
-[sub_resource type="Resource" id="Resource_s2ri5"]
-script = ExtResource("2_t84ow")
-frame = Array[int]([2])
-
-[sub_resource type="Resource" id="Resource_7rlm8"]
-script = ExtResource("2_t84ow")
-frame = Array[int]([3])
-
-[sub_resource type="Resource" id="Resource_1yelq"]
-script = ExtResource("2_t84ow")
-frame = Array[int]([4])
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_lhho5"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_myidi"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_tm8df"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_m05tg"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_415p1"]
 
 [node name="Player_attack_data" type="Area2D"]
 collision_mask = 4
-monitorable = false
 script = ExtResource("1_w2i7p")
-frames = Array[ExtResource("2_t84ow")]([SubResource("Resource_0hcii"), SubResource("Resource_f8edl"), SubResource("Resource_s2ri5"), SubResource("Resource_7rlm8"), SubResource("Resource_1yelq")])
-
-[node name="0_index_frame" type="CollisionShape2D" parent="."]
-visible = false
-shape = SubResource("RectangleShape2D_lhho5")
-disabled = true
-debug_color = Color(0.7, 0, 0, 0.42)
-script = ExtResource("2_5y2gl")
-
-[node name="1_index_frame" type="CollisionShape2D" parent="."]
-visible = false
-shape = SubResource("RectangleShape2D_myidi")
-disabled = true
-debug_color = Color(0.7, 0, 0, 0.42)
-script = ExtResource("2_5y2gl")
-
-[node name="2_index_frame" type="CollisionShape2D" parent="."]
-visible = false
-shape = SubResource("RectangleShape2D_tm8df")
-disabled = true
-debug_color = Color(0.7, 0, 0, 0.42)
-script = ExtResource("2_5y2gl")
-
-[node name="3_index_frame" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_m05tg")
-debug_color = Color(0.7, 0, 0, 0.42)
-script = ExtResource("2_5y2gl")
-
-[node name="4_index_frame" type="CollisionShape2D" parent="."]
-visible = false
-shape = SubResource("RectangleShape2D_415p1")
-disabled = true
-debug_color = Color(0.7, 0, 0, 0.42)
-script = ExtResource("2_5y2gl")
